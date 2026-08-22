@@ -1,16 +1,18 @@
-# Backend API PMK Daniel FILKOM UB ⚡
+# Backend API PMK Daniel FILKOM UB (Python FastAPI) 🐍⚡
 
-Backend REST API untuk website resmi PMK Daniel FILKOM Universitas Brawijaya. Dibangun di atas arsitektur serverless **Cloudflare Workers**, framework **Hono.js**, database **Cloudflare D1 (SQLite)**, dan media storage **Cloudflare R2**.
+Backend REST API untuk website resmi **PMK Daniel FILKOM Universitas Brawijaya**. Dibangun menggunakan **Python**, framework **FastAPI**, ORM **SQLAlchemy (SQLite / D1)**, dan integrasi penyimpanan media **Cloudflare R2**.
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Runtime:** Cloudflare Workers (Edge Serverless)
-* **Framework:** Hono.js (TypeScript)
-* **Database:** Cloudflare D1 (SQL / SQLite)
-* **Object Storage:** Cloudflare R2 (S3-compatible)
-* **Authentication:** JWT + Web Crypto SHA-256
+* **Language:** Python 3.10+
+* **Framework:** FastAPI
+* **Server:** Uvicorn (ASGI)
+* **ORM & Database:** SQLAlchemy + SQLite (kompatibel Cloudflare D1)
+* **Storage:** Cloudflare R2 (via Boto3 S3 Client) dengan fallback lokal
+* **Authentication:** JWT (PyJWT) + SHA-256 Hashing
+* **API Documentation:** Interactive Swagger UI (`/docs`) & ReDoc (`/redoc`)
 
 ---
 
@@ -18,20 +20,28 @@ Backend REST API untuk website resmi PMK Daniel FILKOM Universitas Brawijaya. Di
 
 1. **Install Dependencies:**
    ```bash
-   npm install
+   pip install -r requirements.txt
    ```
 
-2. **Jalankan Migrasi & Data Awal (D1 Lokal):**
+2. **Inisialisasi Database & Data Awal (Seed Data):**
    ```bash
-   npm run migrate:local
-   npm run seed:local
+   python seed.py
    ```
+   *(Secara otomatis membuat database `pmkdaniel.db` dan mengisi data awal pengumuman, divisi, pengurus, serta akun admin).*
 
-3. **Jalankan Server Development:**
+3. **Jalankan Server:**
    ```bash
-   npm run dev
+   uvicorn main:app --reload --port 8000
    ```
-   *Server akan aktif di: `http://localhost:8787`*
+   * Server API aktif di: **`http://localhost:8000`**
+   * **Dokumentasi Interaktif (Swagger UI):** **`http://localhost:8000/docs`**
+
+---
+
+## 🔑 Kredensial Admin Default
+
+* **Username:** `admin`
+* **Password:** `admin123`
 
 ---
 
@@ -39,55 +49,38 @@ Backend REST API untuk website resmi PMK Daniel FILKOM Universitas Brawijaya. Di
 
 ### 1. Public Endpoints
 * `GET /` — Health check & status API.
-* `GET /api/pengumuman` — Daftar pengumuman (mendukung `?kategori=kegiatan|oprec|ultah`, `?search=...`, `?page=1&limit=10`).
-* `GET /api/pengumuman/:idOrSlug` — Detail pengumuman berdasarkan ID atau slug.
-* `GET /api/pengurus` — Struktur divisi dan profil anggota pengurus.
+* `GET /docs` — Swagger UI interaktif untuk mencoba semua API langsung di browser.
+* `GET /api/pengumuman` — Daftar pengumuman (support `?kategori=kegiatan|oprec|ultah`, `?search=...`, `?page=1&limit=10`).
+* `GET /api/pengumuman/{id_or_slug}` — Detail pengumuman (otomatis menambah jumlah *views*).
+* `GET /api/pengurus` — Struktur divisi dan anggota pengurus.
 * `GET /api/forms` — Link Google Form aktif (Maba, Alumni, Kepanitiaan).
 
-### 2. Authentication
+### 2. Autentikasi
 * `POST /api/auth/login` — Login admin (`username`, `password`) -> mengembalikan JWT token.
-  * *Default Akun:* `admin` / `admin123`
 * `GET /api/auth/me` — Cek status & validitas token admin.
 * `PUT /api/auth/change-password` — Ganti password admin (*Protected*).
 
-### 3. Admin Protected Endpoints (Memerlukan header `Authorization: Bearer <token>`)
-* `GET /api/stats` — Statistik ringkas dashboard (total pengumuman, views, pengurus, divisi).
-* `POST /api/pengumuman` — Buat postingan pengumuman baru.
-* `PUT /api/pengumuman/:id` — Update pengumuman.
-* `DELETE /api/pengumuman/:id` — Hapus pengumuman.
-* `POST /api/upload` — Upload gambar ke bucket Cloudflare R2 (multipart form-data).
+### 3. Admin Protected Endpoints (Header: `Authorization: Bearer <token>`)
+* `GET /api/stats` — Ringkasan total data dashboard admin.
+* `POST /api/pengumuman` — Buat pengumuman baru.
+* `PUT /api/pengumuman/{id}` — Update pengumuman.
+* `DELETE /api/pengumuman/{id}` — Hapus pengumuman.
+* `POST /api/upload` — Upload gambar (JPEG, PNG, WebP) ke Cloudflare R2 / lokal.
 * `POST /api/pengurus/divisi` — Tambah divisi.
-* `POST /api/pengurus/member` — Tambah anggota pengurus.
-* `DELETE /api/pengurus/member/:id` — Hapus anggota pengurus.
-* `PUT /api/forms/:key` — Update URL Google Form (`maba`, `alumni`, `kepanitiaan`).
+* `POST /api/pengurus/member` — Tambah pengurus.
+* `DELETE /api/pengurus/member/{id}` — Hapus pengurus.
+* `PUT /api/forms/{key}` — Update URL Google Form.
 
 ---
 
-## ☁️ Panduan Deploy ke Cloudflare (Production)
+## ☁️ Integrasi Cloudflare R2 Storage (Production)
 
-1. **Login ke Akun Cloudflare:**
-   ```bash
-   npx wrangler login
-   ```
-
-2. **Buat Database D1 di Cloudflare:**
-   ```bash
-   npx wrangler d1 create pmk-db
-   ```
-   *(Salin `database_id` yang dihasilkan ke dalam `wrangler.jsonc`).*
-
-3. **Buat Bucket R2 di Cloudflare:**
-   ```bash
-   npx wrangler r2 bucket create pmkdaniel-media
-   ```
-
-4. **Jalankan Migrasi Database ke Cloudflare D1:**
-   ```bash
-   npm run migrate:remote
-   npm run seed:remote
-   ```
-
-5. **Deploy Worker API:**
-   ```bash
-   npm run deploy
-   ```
+Isi kredensial Cloudflare R2 Anda di file `.env`:
+```env
+CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+R2_ACCESS_KEY_ID=your_r2_access_key
+R2_SECRET_ACCESS_KEY=your_r2_secret_key
+R2_BUCKET_NAME=pmkdaniel-media
+R2_PUBLIC_DOMAIN=https://pub-pmkdaniel.r2.dev
+```
+Jika variabel R2 tidak diisi, file yang diunggah akan otomatis tersimpan di folder lokal `./uploads` dan dapat diakses publik di `/uploads/{filename}`.
