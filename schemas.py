@@ -129,3 +129,57 @@ class StatsOverview(BaseModel):
     totalPengurus: int
     totalDivisi: int
     latestPengumuman: List[Any] = []
+
+# Dynamic Forms Schemas
+class FormFieldSchema(BaseModel):
+    id: str
+    label: str
+    type: str # 'text' | 'textarea' | 'radio' | 'checkbox' | 'select' | 'file' | 'date'
+    placeholder: Optional[str] = None
+    required: bool = False
+    options: Optional[List[str]] = None
+    helpText: Optional[str] = None
+
+class DynamicFormBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    slug: Optional[str] = None
+    fields_schema: List[FormFieldSchema] = []
+    is_active: Optional[int] = 1
+
+class DynamicFormCreate(DynamicFormBase):
+    pass
+
+class DynamicFormUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    slug: Optional[str] = None
+    fields_schema: Optional[List[FormFieldSchema]] = None
+    is_active: Optional[int] = None
+
+class DynamicFormOut(BaseModel):
+    id: str
+    title: str
+    slug: str
+    description: Optional[str] = None
+    fields_schema: List[FormFieldSchema] = []
+    is_active: int
+    submission_count: Optional[int] = 0
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class FormSubmissionCreate(BaseModel):
+    answers: dict # mapping of field_id/question_id -> value
+
+class FormSubmissionOut(BaseModel):
+    id: str
+    form_id: str
+    answers: dict
+    submitted_at: datetime
+
+    class Config:
+        from_attributes = True
+

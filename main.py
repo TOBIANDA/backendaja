@@ -10,7 +10,7 @@ from database import engine, Base
 from seed import init_db_and_seed
 
 # Routers
-from routers import auth, pengumuman, pengurus, forms, upload, stats
+from routers import auth, pengumuman, pengurus, forms, upload, stats, dynamic_forms
 
 # Create tables on startup
 Base.metadata.create_all(bind=engine)
@@ -25,12 +25,21 @@ app = FastAPI(
 )
 
 # CORS Middleware
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"]
 )
 
 # Mount local uploads directory if it exists
@@ -42,6 +51,7 @@ app.include_router(auth.router)
 app.include_router(pengumuman.router)
 app.include_router(pengurus.router)
 app.include_router(forms.router)
+app.include_router(dynamic_forms.router)
 app.include_router(upload.router)
 app.include_router(stats.router)
 

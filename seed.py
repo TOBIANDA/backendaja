@@ -87,7 +87,97 @@ def init_db_and_seed():
                     author="Divisi Pemerhati"
                 )
             ]
-            db.add_all(pengumuman_list)
+        # 6. Seed Sample Dynamic Form
+        if db.query(models.DynamicForm).count() == 0:
+            print("Seeding sample dynamic form...")
+            import json
+            sample_fields = [
+                {
+                    "id": "nama_lengkap",
+                    "label": "Nama Lengkap",
+                    "type": "text",
+                    "placeholder": "Contoh: Daniel Bastian",
+                    "required": True,
+                    "helpText": "Nama lengkap sesuai KTM/KTP"
+                },
+                {
+                    "id": "nim",
+                    "label": "NIM (Nomor Induk Mahasiswa)",
+                    "type": "text",
+                    "placeholder": "Contoh: 245150200111000",
+                    "required": True
+                },
+                {
+                    "id": "program_studi",
+                    "label": "Program Studi / Jurusan",
+                    "type": "select",
+                    "required": True,
+                    "options": [
+                        "Teknik Informatika",
+                        "Sistem Informasi",
+                        "Teknologi Informasi",
+                        "Teknik Komputer",
+                        "Pendidikan Teknologi Informasi"
+                    ]
+                },
+                {
+                    "id": "no_whatsapp",
+                    "label": "Nomor WhatsApp Aktif",
+                    "type": "text",
+                    "placeholder": "Contoh: 081234567890",
+                    "required": True
+                },
+                {
+                    "id": "pilihan_divisi",
+                    "label": "Minat Pelayanan Utama (Pilih 1)",
+                    "type": "radio",
+                    "required": True,
+                    "options": [
+                        "Divisi Acara",
+                        "Divisi Musik & Pujian",
+                        "Divisi Media & Komunikasi",
+                        "Divisi Doa & Pemerhati"
+                    ]
+                },
+                {
+                    "id": "talenta_minat",
+                    "label": "Talenta & Keahlian Tambahan (Boleh lebih dari 1)",
+                    "type": "checkbox",
+                    "required": False,
+                    "options": [
+                        "Main Musik (Gitar / Keyboard / Drum / Bass)",
+                        "Vocal / Singer / WL",
+                        "Desain Grafis / Canva / Figma",
+                        "Fotografi / Videografi",
+                        "Public Speaking / MC",
+                        "IT / Web / Coding"
+                    ]
+                },
+                {
+                    "id": "alasan_motivasi",
+                    "label": "Ceritakan Motivasi / Harapan Anda di PMK Daniel",
+                    "type": "textarea",
+                    "placeholder": "Tuliskan harapan dan kerinduan Anda dalam bersekutu di PMK Daniel...",
+                    "required": True
+                },
+                {
+                    "id": "foto_ktm",
+                    "label": "Upload Foto Diri / KTM / Bukti Penerimaan",
+                    "type": "file",
+                    "required": False,
+                    "helpText": "Format diperbolehkan: JPG, PNG, PDF (Maksimal 10MB)"
+                }
+            ]
+
+            sample_form = models.DynamicForm(
+                id="form_maba_2026",
+                title="Form Pendataan Mahasiswa Baru PMK Daniel 2026",
+                slug="pendataan-maba-2026",
+                description="Syalom saudara/i terkasih! Selamat datang di FILKOM UB. Formulir ini digunakan untuk pendataan anggota baru dan pemetaan minat pelayanan di keluarga PMK Daniel.",
+                fields_schema=json.dumps(sample_fields, ensure_ascii=False),
+                is_active=1
+            )
+            db.add(sample_form)
 
         db.commit()
         print("Database initialization and seed complete!")

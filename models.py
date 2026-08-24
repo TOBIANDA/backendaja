@@ -58,3 +58,28 @@ class FormLink(Base):
     google_form_url = Column(String(500), nullable=False)
     is_active = Column(Integer, default=1, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class DynamicForm(Base):
+    __tablename__ = "dynamic_forms"
+
+    id = Column(String(50), primary_key=True, index=True) # e.g. "form_xxx"
+    title = Column(String(255), nullable=False)
+    slug = Column(String(255), unique=True, index=True, nullable=False)
+    description = Column(Text, nullable=True)
+    fields_schema = Column(Text, nullable=False, default="[]") # JSON list of questions
+    is_active = Column(Integer, default=1, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    submissions = relationship("FormSubmission", back_populates="form", cascade="all, delete-orphan")
+
+class FormSubmission(Base):
+    __tablename__ = "form_submissions"
+
+    id = Column(String(50), primary_key=True, index=True) # e.g. "sub_xxx"
+    form_id = Column(String(50), ForeignKey("dynamic_forms.id", ondelete="CASCADE"), nullable=False, index=True)
+    answers_json = Column(Text, nullable=False, default="{}") # JSON mapping question id/label to response
+    submitted_at = Column(DateTime, default=datetime.utcnow)
+
+    form = relationship("DynamicForm", back_populates="submissions")
+
