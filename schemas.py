@@ -88,13 +88,24 @@ class PengurusCreate(BaseModel):
     name: str
     role: str
     photo_url: Optional[str] = None
-    period: str
+    period: Optional[str] = "2025/2026"
     order_priority: Optional[int] = 0
+
+class PengurusUpdate(BaseModel):
+    divisi_id: Optional[str] = None
+    name: Optional[str] = None
+    role: Optional[str] = None
+    photo_url: Optional[str] = None
+    period: Optional[str] = None
+    order_priority: Optional[int] = None
 
 class DivisiOut(BaseModel):
     id: str
     name: str
+    komisi: Optional[str] = None
+    icon_name: Optional[str] = None
     description: Optional[str] = None
+    group_photo_url: Optional[str] = None
     order_priority: int
     members: List[PengurusOut] = []
 
@@ -102,9 +113,21 @@ class DivisiOut(BaseModel):
         from_attributes = True
 
 class DivisiCreate(BaseModel):
+    id: Optional[str] = None
     name: str
+    komisi: Optional[str] = None
+    icon_name: Optional[str] = None
     description: Optional[str] = None
+    group_photo_url: Optional[str] = None
     order_priority: Optional[int] = 0
+
+class DivisiUpdate(BaseModel):
+    name: Optional[str] = None
+    komisi: Optional[str] = None
+    icon_name: Optional[str] = None
+    description: Optional[str] = None
+    group_photo_url: Optional[str] = None
+    order_priority: Optional[int] = None
 
 # Form Link Schemas
 class FormLinkOut(BaseModel):

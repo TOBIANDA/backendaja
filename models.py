@@ -32,7 +32,10 @@ class Divisi(Base):
 
     id = Column(String(50), primary_key=True, index=True)
     name = Column(String(100), nullable=False)
+    komisi = Column(String(100), nullable=True) # e.g. "BPH", "Komisi 1", "Komisi 2", "Komisi 3", "Komisi 4"
+    icon_name = Column(String(50), nullable=True) # e.g. "crown", "pen", "wallet", "book", "heart", "sparkles", "video", "settings"
     description = Column(Text, nullable=True)
+    group_photo_url = Column(String(500), nullable=True)
     order_priority = Column(Integer, default=0)
 
     members = relationship("Pengurus", back_populates="divisi", cascade="all, delete-orphan")
