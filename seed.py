@@ -197,6 +197,34 @@ def init_db_and_seed():
             db.add_all(form_links)
             db.commit()
 
+        # 5. Seed Default Dynamic Form (Pendataan Maba)
+        if not db.query(models.DynamicForm).filter(models.DynamicForm.id == "form_maba_2026").first():
+            import json
+            from datetime import datetime
+            print("Seeding default dynamic form maba 2026...")
+            maba_fields = [
+                { "id": "nama_lengkap", "label": "Nama Lengkap", "type": "text", "placeholder": "Contoh: Jonathan Christopher", "required": True },
+                { "id": "nim", "label": "NIM (Nomor Induk Mahasiswa)", "type": "text", "placeholder": "Contoh: 265150200111001", "required": True },
+                { "id": "program_studi", "label": "Program Studi / Jurusan", "type": "select", "options": ["Teknik Informatika", "Sistem Informasi", "Teknologi Informasi", "Pendidikan Teknologi Informasi", "Teknik Komputer"], "required": True },
+                { "id": "no_whatsapp", "label": "Nomor WhatsApp Aktif", "type": "text", "placeholder": "081234567890", "required": True },
+                { "id": "pilihan_divisi", "label": "Minat Pelayanan Utama (Pilih 1)", "type": "radio", "options": ["Divisi Acara & Ibadah", "Divisi Musik & Pujian", "Divisi Multimedia & Publikasi", "Divisi Doa & Pemerhati", "Divisi Perlengkapan & Logistik"], "required": True },
+                { "id": "talenta_minat", "label": "Talenta & Keahlian Tambahan (Boleh lebih dari 1)", "type": "checkbox", "options": ["Main Musik (Gitar / Keyboard / Drum / Bass)", "Vocal / Singer / WL", "Desain Grafis / Canva / Photoshop", "Fotografi / Videografi", "Operating Sound System / OBS Live Streaming"], "required": False },
+                { "id": "alasan_motivasi", "label": "Ceritakan Motivasi / Harapan Anda di PMK Daniel", "type": "textarea", "placeholder": "Tuliskan cerita singkat atau harapan Anda...", "required": False },
+                { "id": "foto_ktm", "label": "Upload Foto Diri / KTM / Bukti Penerimaan", "type": "file", "helpText": "Format file: JPG, PNG, atau PDF (Maksimal 10MB)", "required": False }
+            ]
+            maba_form = models.DynamicForm(
+                id="form_maba_2026",
+                title="Form Pendataan Mahasiswa Baru PMK Daniel 2026",
+                slug="pendataan-maba-2026",
+                description="Shalom Mahasiswa Baru FILKOM UB! Selamat datang di keluarga besar PMK Daniel. Silakan isi form ini untuk mempermudah komunikasi dan pendampingan kakak tingkat.",
+                fields_schema=json.dumps(maba_fields, ensure_ascii=False),
+                is_active=1,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(maba_form)
+            db.commit()
+
         print("Database initialization and seed complete!")
     except Exception as e:
         db.rollback()
