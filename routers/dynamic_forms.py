@@ -291,13 +291,15 @@ def delete_submission(
     db.commit()
     return schemas.ApiResponse(success=True, message="Tanggapan berhasil dihapus")
 
-@router.get("/{id}/export-csv")
+@router.get("/{id_or_slug}/export-csv")
 def export_form_csv(
-    id: str,
+    id_or_slug: str,
     db: Session = Depends(get_db)
 ):
     """Export all submissions to a formatted CSV spreadsheet."""
-    form = db.query(models.DynamicForm).filter(models.DynamicForm.id == id).first()
+    form = db.query(models.DynamicForm).filter(
+        (models.DynamicForm.id == id_or_slug) | (models.DynamicForm.slug == id_or_slug)
+    ).first()
     if not form:
         raise HTTPException(status_code=404, detail="Formulir tidak ditemukan")
 
